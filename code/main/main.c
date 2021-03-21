@@ -55,16 +55,21 @@ void app_main()
     init();
 
     GAME_OBJECT player;
-    player.position.x = 5;
+    player.position.x = 19;
     player.position.y = 1;
     strcpy(player.texture.text, "HOI");
     player.useCustomTexture = 0;
 
-    renderer_renderObject(player);
-
     while(1)
     {
-        wait(500);
+        // Update
+        // player.position.x += 0.01;
+
+        // Render
+        renderer_prepare();
+        renderer_renderObject(player);
+
+        wait(10);
     }
 }
 

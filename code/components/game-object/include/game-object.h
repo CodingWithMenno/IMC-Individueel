@@ -1,8 +1,6 @@
 #ifndef LCD_OBJECT_H
 #define LCD_OBJECT_H
 
-#include "i2c-lcd1602.h"
-
 /*
     This component is for all the functions and other things that are needed for a game object
 */
@@ -14,8 +12,8 @@
 // Structure for a position (coordinate) on the lcd
 typedef struct
 {
-	int x;
-	int y;
+	double x;
+	double y;
 } COORDINATE;
 
 // Structure for the texture of a GAME_OBJECT (this is drawn on the lcd)
@@ -32,6 +30,5 @@ typedef struct
 	int useCustomTexture;
 	COORDINATE position;
 } GAME_OBJECT;
-
 
 #endif
