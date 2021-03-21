@@ -9,6 +9,8 @@ Om het project te runnen heb je nodig:
 - Een rotary encoder
 - En een paar handen om alles te besturen natuurlijk
 
+(Foto van de opstelling)
+
 (beschrijving van de game opschrijven + hoe de controls werken) (een paar foto's en/of filmpjes toevoegen)
 
 (code structuur beschrijven)
