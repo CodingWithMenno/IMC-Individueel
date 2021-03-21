@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -12,6 +13,8 @@
 
 #include "smbus.h"
 #include "i2c-lcd1602.h"
+#include "game-object.h"
+#include "game-renderer.h"
 #include "qwiic_twist.h"
 
 #define TAG "MAIN"
@@ -31,7 +34,7 @@
 
 // I2C functions
 static void i2cMasterInit();
-static void i2cInit();
+static void init();
 
 // rotary encoder functions
 static void onEncoderClicked();
@@ -49,7 +52,15 @@ static int clickCounter = 0;
 
 void app_main()
 {
-    i2cInit();
+    init();
+
+    GAME_OBJECT player;
+    player.position.x = 5;
+    player.position.y = 1;
+    strcpy(player.texture.text, "HOI");
+    player.useCustomTexture = 0;
+
+    renderer_renderObject(player);
 
     while(1)
     {
@@ -75,7 +86,7 @@ static void i2cMasterInit()
 }
 
 // In this function the i2c, the lcd and the rotary encoder will be setup
-static void i2cInit() 
+static void init() 
 {
     // Set up I2C
     i2cMasterInit();
@@ -96,7 +107,7 @@ static void i2cInit()
     i2c_lcd1602_write_string(lcd_info, "Starting...");
 
     // Rotary encoder init
-    qwiic_twist_t *qwiic_info = (qwiic_twist_t*)malloc(sizeof(qwiic_twist_t));
+    qwiic_twist_t *qwiic_info = (qwiic_twist_t*) malloc(sizeof(qwiic_twist_t));
 
     qwiic_info->smbus_info = smbus_info;
     qwiic_info->i2c_addr = QWIIC_TWIST_ADDRESS;
@@ -110,6 +121,8 @@ static void i2cInit()
     
     qwiic_twist_init(qwiic_info);
     qwiic_twist_start_task(qwiic_info);
+
+    renderer_init(lcd_info);
 }
 
 // This function is called while the rotary encoder is pressed
