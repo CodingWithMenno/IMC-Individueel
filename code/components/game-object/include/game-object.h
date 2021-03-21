@@ -6,7 +6,7 @@
 */
 
 // Some constants for the game objects
-#define MAX_WIDTH_TEXTURE 5
+#define MAX_WIDTH_TEXTURE 8
 
 
 // Structure for a position (coordinate) on the lcd

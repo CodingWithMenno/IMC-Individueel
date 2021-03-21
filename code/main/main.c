@@ -55,15 +55,15 @@ void app_main()
     init();
 
     GAME_OBJECT player;
-    player.position.x = 19;
+    player.position.x = -7;
     player.position.y = 1;
-    strcpy(player.texture.text, "HOI");
+    strcpy(player.texture.text, "HALLO");
     player.useCustomTexture = 0;
 
     while(1)
     {
         // Update
-        // player.position.x += 0.01;
+        player.position.x += 0.05;
 
         // Render
         renderer_prepare();
