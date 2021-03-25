@@ -14,6 +14,7 @@
 #include "smbus.h"
 #include "i2c-lcd1602.h"
 #include "game-object.h"
+#include "game-camera.h"
 #include "game-renderer.h"
 #include "qwiic_twist.h"
 
@@ -49,27 +50,47 @@ static void wait(unsigned int);
 static bool isHolded = false;
 static int clickCounter = 0;
 
+// The player
+static GAME_OBJECT player;
+
+// Semaphore for the main loop
+static SemaphoreHandle_t mainLoopMutex; 
 
 void app_main()
 {
     init();
 
-    GAME_OBJECT player;
-    player.position.x = -7;
+    player.position.x = 3;
     player.position.y = 1;
-    strcpy(player.texture.text, "HALLO");
+    strcpy(player.texture.text, "O");
     player.useCustomTexture = 0;
+    camera_set(player.position);
 
+    GAME_OBJECT test;
+    test.position.x = 0;
+    test.position.y = 2;
+    strcpy(test.texture.text, "VV");
+    test.useCustomTexture = 0;
+
+
+    portTickType xLastWakeTime;
+    xLastWakeTime = xTaskGetTickCount();
     while(1)
     {
         // Update
-        player.position.x += 0.05;
+        xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
+
+        camera_follow(player);
+
+        xSemaphoreGive(mainLoopMutex);
 
         // Render
         renderer_prepare();
-        renderer_renderObject(player);
+        renderer_renderObject(player, camera_Offset());
+        renderer_renderObject(test, camera_Offset());
 
-        wait(10);
+        // This way every 100 seconds the loop will have another iteration
+        vTaskDelayUntil(&xLastWakeTime, (100 / portTICK_RATE_MS));
     }
 }
 
@@ -124,10 +145,11 @@ static void init()
     qwiic_info->onButtonClicked = &onEncoderClicked;
     qwiic_info->onMoved = &onEncoderMoved;
     
+    renderer_init(lcd_info);
+    mainLoopMutex = xSemaphoreCreateMutex();
+
     qwiic_twist_init(qwiic_info);
     qwiic_twist_start_task(qwiic_info);
-
-    renderer_init(lcd_info);
 }
 
 // This function is called while the rotary encoder is pressed
@@ -158,17 +180,19 @@ static void onEncoderClicked()
 // This function is called when the rotary encoder is moved
 static void onEncoderMoved(int16_t diff)
 {
+    xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
     if(diff>0)
     {
         // Rotary encoder has rotated to the right
         
-        // Do something 
+        player.position.x += 1;
     } else 
     {
         // Rotary encoder has rotated to the left
 
-        // Do something
+        player.position.x -= 1;
     }
+    xSemaphoreGive(mainLoopMutex);
 }
 
 // Call this function to delay the program with the given parameter (in milliseconds)

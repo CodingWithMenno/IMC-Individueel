@@ -1,9 +1,16 @@
 #ifndef LCD_OBJECT_H
 #define LCD_OBJECT_H
 
+// Includes needed when using this header file
+#include "i2c-lcd1602.h"
+
 /*
     This component is for all the functions and other things that are needed for a game object
 */
+
+// LCD attributes
+#define LCD_HEIGHT 4
+#define LCD_WIDTH 20
 
 // Some constants for the game objects
 #define MAX_WIDTH_TEXTURE 8
