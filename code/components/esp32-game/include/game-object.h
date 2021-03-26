@@ -14,6 +14,8 @@
 
 // Some constants for the game objects
 #define MAX_WIDTH_TEXTURE 8
+// Used to define a object as invalid (set the useCustomTexture as INVALID)
+#define INVALID_OBJECT 69
 
 
 // Structure for a position (coordinate) on the lcd

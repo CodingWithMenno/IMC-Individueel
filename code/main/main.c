@@ -14,9 +14,6 @@
 #include "smbus.h"
 #include "i2c-lcd1602.h"
 #include "game-scene.h"
-// #include "game-object.h"
-// #include "game-camera.h"
-// #include "game-renderer.h"
 #include "qwiic_twist.h"
 
 #define TAG "MAIN"
@@ -46,16 +43,9 @@ static void onEncoderMoved(int16_t);
 // Other functions
 static void wait(unsigned int);
 
-
-// Semaphore for the main loop
-static SemaphoreHandle_t mainLoopMutex; 
-
 // Boolean and int to check if you holded the rotary encoder for a moment
 static bool isHolded = false;
 static int clickCounter = 0;
-
-// The player
-// static GAME_OBJECT player;
 
 void app_main()
 {
@@ -78,18 +68,16 @@ void app_main()
     xLastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
-
         // Update
         // camera_follow(player);
+        scene_update();
 
 
         // Render
         // renderer_prepare();
         // renderer_renderObject(player, camera_Offset());
         // renderer_renderObject(test, camera_Offset());
-
-        xSemaphoreGive(mainLoopMutex);
+        scene_render();
 
         // This way every 100 seconds the loop will have another iteration
         vTaskDelayUntil(&xLastWakeTime, (100 / portTICK_RATE_MS));
@@ -129,9 +117,8 @@ static void init()
     qwiic_info->onButtonPressed = &onEncoderPressed;
     qwiic_info->onButtonClicked = &onEncoderClicked;
     qwiic_info->onMoved = &onEncoderMoved;
-    
-    // renderer_init(lcd_info);
-    mainLoopMutex = xSemaphoreCreateMutex();
+
+    scene_init(lcd_info);
 
     qwiic_twist_init(qwiic_info);
     qwiic_twist_start_task(qwiic_info);
@@ -143,19 +130,19 @@ static void onEncoderPressed()
     clickCounter++;
     if(clickCounter == 5)
     {
-        // Do something
+        scene_userHolded();
 
         clickCounter = 0;
         isHolded = true;
     }
 }
 
-// This function is called when the rotary encoder is clicked ()
+// This function is called when the rotary encoder is clicked
 static void onEncoderClicked()
 {
     if (!isHolded)
     {
-        // Do something
+        scene_userClicked();
     }
 
     clickCounter = 0;
@@ -165,19 +152,7 @@ static void onEncoderClicked()
 // This function is called when the rotary encoder is moved
 static void onEncoderMoved(int16_t diff)
 {
-    xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
-    if(diff > 0)
-    {
-        // Rotary encoder has rotated to the right
-        
-        // player.position.x += 1;
-    } else 
-    {
-        // Rotary encoder has rotated to the left
-
-        // player.position.x -= 1;
-    }
-    xSemaphoreGive(mainLoopMutex);
+    scene_userRotated(diff);
 }
 
 // The I2C master is setup in this function

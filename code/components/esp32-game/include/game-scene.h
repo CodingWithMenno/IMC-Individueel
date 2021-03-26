@@ -8,23 +8,14 @@
     the current displaying scene.
 */
 
-// The defenition of a scène in the game
-typedef struct
-{
-    int id;
-    void (*scene_update)(void);
-    void (*scene_render)(void);
-    void (*scene_userClicked)();
-    void (*scene_userHolded)();
-    void (*scene_userRotatedRight)(int16_t);
-    void (*scene_userRotatedLeft)(int16_t);
-} GAME_SCENE;
 
 /*
     This function inits all the scenes and variables needed
     for this component.
+
+    @param 1: A pointer to the lcd info
 */
-void scene_init();
+void scene_init(i2c_lcd1602_info_t*);
 
 /*
     This function updates the current displaying scene.
