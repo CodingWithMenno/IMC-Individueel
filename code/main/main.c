@@ -13,9 +13,10 @@
 
 #include "smbus.h"
 #include "i2c-lcd1602.h"
-#include "game-object.h"
-#include "game-camera.h"
-#include "game-renderer.h"
+#include "game-scene.h"
+// #include "game-object.h"
+// #include "game-camera.h"
+// #include "game-renderer.h"
 #include "qwiic_twist.h"
 
 #define TAG "MAIN"
@@ -46,69 +47,53 @@ static void onEncoderMoved(int16_t);
 static void wait(unsigned int);
 
 
-// boolean to check if you went back a menu
+// Semaphore for the main loop
+static SemaphoreHandle_t mainLoopMutex; 
+
+// Boolean and int to check if you holded the rotary encoder for a moment
 static bool isHolded = false;
 static int clickCounter = 0;
 
 // The player
-static GAME_OBJECT player;
-
-// Semaphore for the main loop
-static SemaphoreHandle_t mainLoopMutex; 
+// static GAME_OBJECT player;
 
 void app_main()
 {
     init();
 
-    player.position.x = 3;
-    player.position.y = 1;
-    strcpy(player.texture.text, "O");
-    player.useCustomTexture = 0;
-    camera_set(player.position);
+    // player.position.x = 3;
+    // player.position.y = 1;
+    // strcpy(player.texture.text, "O");
+    // player.useCustomTexture = 0;
+    // camera_set(player.position);
 
-    GAME_OBJECT test;
-    test.position.x = 0;
-    test.position.y = 2;
-    strcpy(test.texture.text, "VV");
-    test.useCustomTexture = 0;
+    // GAME_OBJECT test;
+    // test.position.x = 0;
+    // test.position.y = 2;
+    // strcpy(test.texture.text, "VV");
+    // test.useCustomTexture = 0;
 
 
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        // Update
         xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
 
-        camera_follow(player);
+        // Update
+        // camera_follow(player);
 
-        xSemaphoreGive(mainLoopMutex);
 
         // Render
-        renderer_prepare();
-        renderer_renderObject(player, camera_Offset());
-        renderer_renderObject(test, camera_Offset());
+        // renderer_prepare();
+        // renderer_renderObject(player, camera_Offset());
+        // renderer_renderObject(test, camera_Offset());
+
+        xSemaphoreGive(mainLoopMutex);
 
         // This way every 100 seconds the loop will have another iteration
         vTaskDelayUntil(&xLastWakeTime, (100 / portTICK_RATE_MS));
     }
-}
-
-// The I2C master is setup in this function
-static void i2cMasterInit()
-{
-    int i2c_master_port = I2C_MASTER_NUM;
-    i2c_config_t conf;
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = I2C_MASTER_SDA_IO;
-    conf.sda_pullup_en = GPIO_PULLUP_DISABLE;
-    conf.scl_io_num = I2C_MASTER_SCL_IO;
-    conf.scl_pullup_en = GPIO_PULLUP_DISABLE;
-    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
-    i2c_param_config(i2c_master_port, &conf);
-    i2c_driver_install(i2c_master_port, conf.mode,
-                       I2C_MASTER_RX_BUF_LEN,
-                       I2C_MASTER_TX_BUF_LEN, 0);
 }
 
 // In this function the i2c, the lcd and the rotary encoder will be setup
@@ -145,7 +130,7 @@ static void init()
     qwiic_info->onButtonClicked = &onEncoderClicked;
     qwiic_info->onMoved = &onEncoderMoved;
     
-    renderer_init(lcd_info);
+    // renderer_init(lcd_info);
     mainLoopMutex = xSemaphoreCreateMutex();
 
     qwiic_twist_init(qwiic_info);
@@ -181,18 +166,35 @@ static void onEncoderClicked()
 static void onEncoderMoved(int16_t diff)
 {
     xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
-    if(diff>0)
+    if(diff > 0)
     {
         // Rotary encoder has rotated to the right
         
-        player.position.x += 1;
+        // player.position.x += 1;
     } else 
     {
         // Rotary encoder has rotated to the left
 
-        player.position.x -= 1;
+        // player.position.x -= 1;
     }
     xSemaphoreGive(mainLoopMutex);
+}
+
+// The I2C master is setup in this function
+static void i2cMasterInit()
+{
+    int i2c_master_port = I2C_MASTER_NUM;
+    i2c_config_t conf;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = I2C_MASTER_SDA_IO;
+    conf.sda_pullup_en = GPIO_PULLUP_DISABLE;
+    conf.scl_io_num = I2C_MASTER_SCL_IO;
+    conf.scl_pullup_en = GPIO_PULLUP_DISABLE;
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
+    i2c_param_config(i2c_master_port, &conf);
+    i2c_driver_install(i2c_master_port, conf.mode,
+                       I2C_MASTER_RX_BUF_LEN,
+                       I2C_MASTER_TX_BUF_LEN, 0);
 }
 
 // Call this function to delay the program with the given parameter (in milliseconds)

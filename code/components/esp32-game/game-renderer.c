@@ -31,8 +31,8 @@ int renderer_prepare()
 int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
 {    
     // Rounds the double to the nearest int
-    int x = (int) (object.position.x + 0.5 - (object.position.x < 0)) - (int) (cameraPos.x + 0.5 - (cameraPos.x < 0));
-    int y = (int) (object.position.y + 0.5 - (object.position.y < 0)) - (int) (cameraPos.y + 0.5 - (cameraPos.y < 0));
+    int x = (int) ((object.position.x - cameraPos.x) + 0.5 - (object.position.x < 0));
+    int y = (int) ((object.position.y - cameraPos.y) + 0.5 - (object.position.y < 0));
 
     if (x >= LCD_WIDTH || y >= LCD_HEIGHT)
     {
