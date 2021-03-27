@@ -16,6 +16,8 @@
 #define MAX_WIDTH_TEXTURE 8
 // Used to define a object as invalid (set the useCustomTexture as INVALID)
 #define INVALID_OBJECT 69
+// The standard gravity for each object
+#define OBJECT_GRAVITY 0.3
 
 
 // Structure for a position (coordinate) on the lcd
@@ -39,5 +41,15 @@ typedef struct
 	int useCustomTexture;
 	COORDINATE position;
 } GAME_OBJECT;
+
+/*
+	Function to check if 2 game objects are colliding
+
+	@param 1: Object 1
+	@param 2: Object 2
+
+	@returns: A boolean (1, 0) to see if the objects are colliding
+*/
+int object_collided(GAME_OBJECT, GAME_OBJECT);
 
 #endif

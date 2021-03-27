@@ -12,7 +12,7 @@ void camera_set(COORDINATE newPos)
 
 void camera_follow(GAME_OBJECT object)
 {
-    const double cameraSpeed = 0.3;
+    const double cameraSpeed = 0.5;
 
     double objectOffsetX = object.position.x - LCD_WIDTH / 2;
     double objectOffsetY = object.position.y - LCD_HEIGHT / 2;

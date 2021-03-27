@@ -31,10 +31,10 @@ int renderer_prepare()
 int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
 {    
     // Rounds the double to the nearest int
-    int x = (int) ((object.position.x - cameraPos.x) + 0.5 - (object.position.x < 0));
-    int y = (int) ((object.position.y - cameraPos.y) + 0.5 - (object.position.y < 0));
+    int x = (int) ((object.position.x - cameraPos.x) + 0.5 - (object.position.x - cameraPos.x < 0));
+    int y = (int) ((object.position.y - cameraPos.y) + 0.5 - (object.position.y - cameraPos.y < 0));
 
-    if (x >= LCD_WIDTH || y >= LCD_HEIGHT)
+    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || y < 0)
     {
         // Object is out of bounds
         return RENDERER_NOT_RENDERED;
@@ -48,9 +48,9 @@ int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
     if (object.useCustomTexture)
     {
         // Check if the object is in bounds
-        if (x < 0 || y < 0)
+        if (x < 0)
         {
-            return RENDERER_NOT_RENDERED;
+            errorCode = RENDERER_NOT_RENDERED;
         }
 
         // Render custom texture
@@ -68,11 +68,7 @@ int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
 
 static int renderText(GAME_OBJECT object, int x, int y)
 {
-    // Rounds the double to the nearest int
-    // int x = (int) (object.position.x + 0.5 - (object.position.x < 0));
-    // int y = (int) (object.position.y + 0.5 - (object.position.y < 0));
-
-    if (x >= LCD_WIDTH || y >= LCD_HEIGHT)
+    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || y < 0)
     {
         // Text is out of bounds
         return RENDERER_NOT_RENDERED;

@@ -128,7 +128,7 @@ static void init()
 static void onEncoderPressed()
 {
     clickCounter++;
-    if(clickCounter == 5)
+    if(clickCounter == 3)
     {
         scene_userHolded();
 

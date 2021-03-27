@@ -8,14 +8,20 @@
     the current displaying scene.
 */
 
+// Game error codes
+#define GAME_OKE 0
+#define GAME_ERROR 1
+
 
 /*
     This function inits all the scenes and variables needed
     for this component.
 
     @param 1: A pointer to the lcd info
+
+    @returns: A game error code
 */
-void scene_init(i2c_lcd1602_info_t*);
+int scene_init(i2c_lcd1602_info_t*);
 
 /*
     This function updates the current displaying scene.
