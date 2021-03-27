@@ -10,7 +10,6 @@ static int mainSceneInit();
 static void mainSceneUpdate();
 static void mainSceneRotated(int16_t);
 static void mainScenenClicked();
-static void mainSceneHolded();
 
 #define TOTAL_SCENES 1
 #define MAX_OBJECTS_IN_SCENE 10
@@ -30,18 +29,14 @@ typedef struct
 // Semaphore for the main loop
 static SemaphoreHandle_t mainLoopMutex; 
 
-static i2c_lcd1602_info_t *lcdInfo;
-
 // The current scene 
 static int currentSceneId;
 // All the scenes in the game
 static GAME_SCENE *scenes;
 
 
-int scene_init(i2c_lcd1602_info_t *newLcdInfo)
+int scene_init(i2c_lcd1602_info_t *lcdInfo)
 {
-    lcdInfo = newLcdInfo;
-
     mainLoopMutex = xSemaphoreCreateMutex();
 
     renderer_init(lcdInfo);
@@ -134,7 +129,7 @@ static int mainSceneInit()
     scenes[SCENE_MAIN_ID].id = SCENE_MAIN_ID;
     scenes[SCENE_MAIN_ID].scene_update = &mainSceneUpdate;
     scenes[SCENE_MAIN_ID].scene_userClicked = &mainScenenClicked;
-    scenes[SCENE_MAIN_ID].scene_userHolded = &mainSceneHolded;
+    scenes[SCENE_MAIN_ID].scene_userHolded = NULL;
     scenes[SCENE_MAIN_ID].scene_userRotated = &mainSceneRotated;
     scenes[SCENE_MAIN_ID].objects = (GAME_OBJECT*) malloc(sizeof(GAME_OBJECT) * MAX_OBJECTS_IN_SCENE);
     if (scenes[SCENE_MAIN_ID].objects == NULL)
@@ -142,23 +137,28 @@ static int mainSceneInit()
         return GAME_ERROR;
     }
     
+    // Player
     scenes[SCENE_MAIN_ID].objects[0].position.x = 3;
     scenes[SCENE_MAIN_ID].objects[0].position.y = -20;
     strcpy(scenes[SCENE_MAIN_ID].objects[0].texture.text, "O");
     scenes[SCENE_MAIN_ID].objects[0].useCustomTexture = 0;
     camera_set(scenes[SCENE_MAIN_ID].objects[0].position);
+    // Obstacle 1
     scenes[SCENE_MAIN_ID].objects[1].position.x = 0;
     scenes[SCENE_MAIN_ID].objects[1].position.y = -18;
     strcpy(scenes[SCENE_MAIN_ID].objects[1].texture.text, "VVVVVV");
     scenes[SCENE_MAIN_ID].objects[1].useCustomTexture = 0;
+    // Obstacle 2
     scenes[SCENE_MAIN_ID].objects[2].position.x = 8;
     scenes[SCENE_MAIN_ID].objects[2].position.y = -16;
     strcpy(scenes[SCENE_MAIN_ID].objects[2].texture.text, "VVVVVV");
     scenes[SCENE_MAIN_ID].objects[2].useCustomTexture = 0;
+    // Obstacle 3
     scenes[SCENE_MAIN_ID].objects[3].position.x = -7;
     scenes[SCENE_MAIN_ID].objects[3].position.y = -20;
     strcpy(scenes[SCENE_MAIN_ID].objects[3].texture.text, "VVVVVV");
     scenes[SCENE_MAIN_ID].objects[3].useCustomTexture = 0;
+    // Fill-up item
     scenes[SCENE_MAIN_ID].objects[4].useCustomTexture = INVALID_OBJECT;
     return GAME_OKE;
 }
@@ -202,9 +202,4 @@ static void mainSceneRotated(int16_t diff)
 static void mainScenenClicked()
 {   
     scenes[SCENE_MAIN_ID].objects[0].position.y -= 3.5;
-}
-
-static void mainSceneHolded()
-{
-
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -35,13 +36,10 @@
 static void i2cMasterInit();
 static void init();
 
-// rotary encoder functions
+// Rotary encoder functions
 static void onEncoderClicked();
 static void onEncoderPressed();
 static void onEncoderMoved(int16_t);
-
-// Other functions
-static void wait(unsigned int);
 
 // Boolean and int to check if you holded the rotary encoder for a moment
 static bool isHolded = false;
@@ -51,32 +49,15 @@ void app_main()
 {
     init();
 
-    // player.position.x = 3;
-    // player.position.y = 1;
-    // strcpy(player.texture.text, "O");
-    // player.useCustomTexture = 0;
-    // camera_set(player.position);
-
-    // GAME_OBJECT test;
-    // test.position.x = 0;
-    // test.position.y = 2;
-    // strcpy(test.texture.text, "VV");
-    // test.useCustomTexture = 0;
-
-
     portTickType xLastWakeTime;
     xLastWakeTime = xTaskGetTickCount();
     while(1)
     {
-        // Update
-        // camera_follow(player);
+        // Update the scene
         scene_update();
 
 
-        // Render
-        // renderer_prepare();
-        // renderer_renderObject(player, camera_Offset());
-        // renderer_renderObject(test, camera_Offset());
+        // Render the scene
         scene_render();
 
         // This way every 100 seconds the loop will have another iteration
@@ -118,7 +99,9 @@ static void init()
     qwiic_info->onButtonClicked = &onEncoderClicked;
     qwiic_info->onMoved = &onEncoderMoved;
 
-    scene_init(lcd_info);
+    int errorCode = scene_init(lcd_info);
+    // Check if the scene was succesfully init
+    assert(errorCode == GAME_OKE);
 
     qwiic_twist_init(qwiic_info);
     qwiic_twist_start_task(qwiic_info);
@@ -170,10 +153,4 @@ static void i2cMasterInit()
     i2c_driver_install(i2c_master_port, conf.mode,
                        I2C_MASTER_RX_BUF_LEN,
                        I2C_MASTER_TX_BUF_LEN, 0);
-}
-
-// Call this function to delay the program with the given parameter (in milliseconds)
-static void wait(unsigned int ms)
-{
-    vTaskDelay(ms / portTICK_RATE_MS);
 }

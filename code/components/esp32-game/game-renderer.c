@@ -30,7 +30,7 @@ int renderer_prepare()
 
 int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
 {    
-    // Rounds the double to the nearest int
+    // Takes the relative position of the object to the camera and rounds the double to the nearest int
     int x = (int) ((object.position.x - cameraPos.x) + 0.5 - (object.position.x - cameraPos.x < 0));
     int y = (int) ((object.position.y - cameraPos.y) + 0.5 - (object.position.y - cameraPos.y < 0));
 
@@ -67,13 +67,7 @@ int renderer_renderObject(GAME_OBJECT object, COORDINATE cameraPos)
 }
 
 static int renderText(GAME_OBJECT object, int x, int y)
-{
-    if (x >= LCD_WIDTH || y >= LCD_HEIGHT || y < 0)
-    {
-        // Text is out of bounds
-        return RENDERER_NOT_RENDERED;
-    }
-    
+{    
     int length = strlen(object.texture.text);
     // Calculate how many chars are out of bounds on each side
     int rightOutOfBounds = x + (length) - LCD_WIDTH;
