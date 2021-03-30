@@ -5,22 +5,30 @@
 #include "game-renderer.h"
 #include "game-scene.h"
 
+// Menu scene functions
+static int menuSceneInit();
+static void menuSceneUpdate();
+
 // Main scene functions
 static int mainSceneInit();
 static void mainSceneUpdate();
 static void mainSceneRotated(int16_t);
-static void mainScenenClicked();
+static void mainSceneClicked();
+static void mainSceneHolded();
+
+// Other functions
+int switchScene(int);
 
 #define TOTAL_SCENES 1
 #define MAX_OBJECTS_IN_SCENE 10
-#define SCENE_MAIN_ID 0
 
 // The defenition of a scène in the game
 typedef struct
 {
     int id;
     GAME_OBJECT *objects;
-    void (*scene_update)(void);
+    int (*scene_init)();
+    void (*scene_update)();
     void (*scene_userClicked)();
     void (*scene_userHolded)();
     void (*scene_userRotated)(int16_t);
@@ -46,11 +54,44 @@ int scene_init(i2c_lcd1602_info_t *lcdInfo)
     {
         return GAME_ERROR;
     }
-    
-    int errorCode = mainSceneInit();
 
-    currentSceneId = SCENE_MAIN_ID;
+    // Set the init functions for every scene
+    scenes[SCENE_MAIN_ID].scene_init = &mainSceneInit;
+    scenes[SCENE_MENU_ID].scene_init = &menuSceneInit;
+
+    // Init the first scene
+    currentSceneId = SCENE_MAIN_ID;    
+    return scenes[currentSceneId].scene_init();
+}
+
+int scene_switch(int newSceneId)
+{
+    xSemaphoreTake(mainLoopMutex, portMAX_DELAY);
+
+    int errorCode = switchScene(newSceneId);
+
+    xSemaphoreGive(mainLoopMutex);
+
     return errorCode;
+}
+
+// Intern function for switching the scene, so no deadlock will occur (without semaphore)
+int switchScene(int newSceneId)
+{
+    // Init the new scene (return if failed)
+    int errorCode = scenes[newSceneId].scene_init();
+    if (errorCode == GAME_ERROR)
+    {
+        xSemaphoreGive(mainLoopMutex);
+        return GAME_ERROR;
+    }
+
+    // Trying to free the objects caused a lot of problems
+    // free(scenes[currentSceneId].objects);
+
+    // Set the new scene as the current scene
+    currentSceneId = newSceneId;
+    return GAME_OKE;
 }
 
 void scene_update()
@@ -71,8 +112,10 @@ void scene_render()
 
     renderer_prepare();
 
+    // Render every object in the scene
     for (int i = 0; i < MAX_OBJECTS_IN_SCENE; i++)
     {
+        // The fill-up item is always the last item
         if (scenes[currentSceneId].objects[i].useCustomTexture == INVALID_OBJECT)
         {
             break;
@@ -123,13 +166,61 @@ void scene_userHolded()
 
 // From here are all the elaborations of the scenes
 
-//Main scene
+// Menu scene
+static int menuSceneInit()
+{
+    static int isInit = 0;
+    if (isInit)
+    {
+        return GAME_OKE;
+    }
+
+    scenes[SCENE_MENU_ID].id = SCENE_MENU_ID;
+    scenes[SCENE_MENU_ID].scene_init = &menuSceneInit;
+    scenes[SCENE_MENU_ID].scene_update = &menuSceneUpdate;
+    scenes[SCENE_MENU_ID].scene_userClicked = NULL;
+    scenes[SCENE_MENU_ID].scene_userHolded = NULL;
+    scenes[SCENE_MENU_ID].scene_userRotated = NULL;
+    scenes[SCENE_MENU_ID].objects = (GAME_OBJECT*) malloc(sizeof(GAME_OBJECT) * MAX_OBJECTS_IN_SCENE);
+    if (scenes[SCENE_MENU_ID].objects == NULL)
+    {
+        return GAME_ERROR;
+    }
+    
+    // Test UI item
+    scenes[SCENE_MENU_ID].objects[0].position.x = 3;
+    scenes[SCENE_MENU_ID].objects[0].position.y = 1;
+    strcpy(scenes[SCENE_MENU_ID].objects[0].texture.text, "TEST");
+    scenes[SCENE_MENU_ID].objects[0].useCustomTexture = 0;
+    // Fill-up item
+    scenes[SCENE_MENU_ID].objects[1].useCustomTexture = INVALID_OBJECT;
+
+    isInit = 1;
+    return GAME_OKE;
+}
+
+static void menuSceneUpdate()
+{
+    COORDINATE camPos;
+    camPos.x = 0;
+    camPos.y = 0;
+    camera_set(camPos);
+}
+
+// Main scene
 static int mainSceneInit()
 {
+    static int isInit = 0;
+    if (isInit)
+    {
+        return GAME_OKE;
+    }
+
     scenes[SCENE_MAIN_ID].id = SCENE_MAIN_ID;
+    scenes[SCENE_MAIN_ID].scene_init = &mainSceneInit;
     scenes[SCENE_MAIN_ID].scene_update = &mainSceneUpdate;
-    scenes[SCENE_MAIN_ID].scene_userClicked = &mainScenenClicked;
-    scenes[SCENE_MAIN_ID].scene_userHolded = NULL;
+    scenes[SCENE_MAIN_ID].scene_userClicked = &mainSceneClicked;
+    scenes[SCENE_MAIN_ID].scene_userHolded = &mainSceneHolded;
     scenes[SCENE_MAIN_ID].scene_userRotated = &mainSceneRotated;
     scenes[SCENE_MAIN_ID].objects = (GAME_OBJECT*) malloc(sizeof(GAME_OBJECT) * MAX_OBJECTS_IN_SCENE);
     if (scenes[SCENE_MAIN_ID].objects == NULL)
@@ -160,6 +251,8 @@ static int mainSceneInit()
     scenes[SCENE_MAIN_ID].objects[3].useCustomTexture = 0;
     // Fill-up item
     scenes[SCENE_MAIN_ID].objects[4].useCustomTexture = INVALID_OBJECT;
+
+    isInit = 1;
     return GAME_OKE;
 }
 
@@ -199,7 +292,12 @@ static void mainSceneRotated(int16_t diff)
     }
 }
 
-static void mainScenenClicked()
+static void mainSceneClicked()
 {   
     scenes[SCENE_MAIN_ID].objects[0].position.y -= 3.5;
+}
+
+static void mainSceneHolded()
+{
+    switchScene(SCENE_MENU_ID);
 }

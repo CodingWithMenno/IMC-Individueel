@@ -12,6 +12,9 @@
 #define GAME_OKE 0
 #define GAME_ERROR 1
 
+// The ID of every scene in the game
+#define SCENE_MAIN_ID 0
+#define SCENE_MENU_ID 1
 
 /*
     This function inits all the scenes and variables needed
@@ -22,6 +25,15 @@
     @returns: A game error code
 */
 int scene_init(i2c_lcd1602_info_t*);
+
+/*
+    This functions is used for switching to a different scene
+
+    @param 1: The id of the scene to switch to
+
+    @returns: A game error code
+*/
+int scene_switch(int);
 
 /*
     This function updates the current displaying scene.
