@@ -13,7 +13,7 @@
 #define LCD_WIDTH 20
 
 // Some constants for the game objects
-#define MAX_WIDTH_TEXTURE 8
+#define MAX_WIDTH_TEXTURE 20
 // Used to define a object as invalid (set the useCustomTexture as INVALID)
 #define INVALID_OBJECT 69
 // The standard gravity for each object
