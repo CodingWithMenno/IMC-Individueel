@@ -11,11 +11,6 @@ Om het project te runnen heb je nodig:
 
 ---
 
-Hierbij een foto van de opstelling hoe alle draadjes verbonden moeten worden:
-![Foto van de opstelling](20210330_111237.jpg)
-
----
-
 Voor deze eindopdracht heb ik een hele kleine en simpele game engine gebouwd voor de lcd zodat je bijvoorbeeld simpele games
 zoals de google dino game of flappy bird zou kunnen maken en spelen. Al mijn eigen geschreven code bevind zich
 in de "esp32-game" component en bevat code over het renderen van text (half in beeld renderen), het laten zien van verschillende
@@ -27,3 +22,8 @@ het "Try again" scherm en daar kan je op klikken om opnieuw te beginnen (je kan 
 encoder ingedrukt te houden). Hieronder de link naar het filmpje van de demo:
 
 https://www.youtube.com/watch?v=k2QjWd4fGxc
+
+---
+
+Hierbij een foto van de opstelling hoe alle draadjes verbonden moeten worden:
+![Foto van de opstelling](20210330_111237.jpg)
